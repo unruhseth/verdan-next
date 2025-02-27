@@ -14,21 +14,54 @@ interface Task {
 }
 
 // API response types
-type ApiResponse<T> = {
-  data?: {
-    data: T;
-  };
-  error?: string;
-};
+interface ApiErrorResponse {
+  error: string;
+}
 
-type TaskListResponse = ApiResponse<Task[]>;
-type TaskCreateResponse = ApiResponse<{ task: Task }>;
-type TaskUpdateResponse = ApiResponse<{ task: Task }>;
-type TaskDeleteResponse = ApiResponse<{ message: string }>;
+interface TaskListResponse {
+  data: Task[];
+}
+
+interface TaskCreateResponse {
+  data: {
+    task: Task;
+  };
+}
+
+interface TaskUpdateResponse {
+  data: {
+    task: Task;
+  };
+}
+
+interface TaskDeleteResponse {
+  message: string;
+}
 
 interface Props {
   accountId: string;
   isAdminView?: boolean;
+}
+
+// Type guards
+function isTaskListResponse(response: any): response is TaskListResponse {
+  return response && 'data' in response && Array.isArray(response.data);
+}
+
+function isTaskCreateResponse(response: any): response is TaskCreateResponse {
+  return response && 'data' in response && 'task' in response.data;
+}
+
+function isTaskUpdateResponse(response: any): response is TaskUpdateResponse {
+  return response && 'data' in response && 'task' in response.data;
+}
+
+function isTaskDeleteResponse(response: any): response is TaskDeleteResponse {
+  return response && 'message' in response;
+}
+
+function isErrorResponse(response: any): response is ApiErrorResponse {
+  return response && 'error' in response;
 }
 
 export default function TaskManagerDashboard({ accountId, isAdminView = false }: Props) {
@@ -47,16 +80,24 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
   const loadTasks = async () => {
     try {
       setIsLoading(true);
-      const result = await fetchWithAuth<TaskListResponse>(`/api/apps/task-manager/${accountId}/tasks`);
+      console.log('Loading tasks for account:', accountId);
+      const result = await fetchWithAuth<{ data: Task[] }>(`/api/apps/task-manager/${accountId}/tasks`);
+      console.log('Task loading response:', result);
       
       if (result.data?.data) {
+        console.log('Tasks loaded successfully:', result.data.data);
         setTasks(result.data.data);
+        setError(null);
       } else if (result.error) {
+        console.log('Error loading tasks:', result.error);
         setError(result.error);
+      } else {
+        console.log('Unexpected response format:', result);
+        setError('Unexpected response format from server');
       }
     } catch (error) {
+      console.error('Error in loadTasks:', error);
       setError('Failed to load tasks');
-      console.error('Error loading tasks:', error);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +110,8 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
       setIsSubmitting(true);
       setError(null);
       
-      const result = await fetchWithAuth<TaskCreateResponse>('/api/apps/task-manager/tasks', {
+      console.log('Creating task:', { accountId, newTask });
+      const result = await fetchWithAuth<{ data: { task: Task } }>('/api/apps/task-manager/tasks', {
         method: 'POST',
         body: JSON.stringify({
           account_id: accountId,
@@ -77,17 +119,22 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
           description: newTask.description,
         }),
       });
+      console.log('Task creation response:', result);
 
-      const newTaskData = result.data?.data?.task;
-      if (newTaskData) {
-        setTasks(prev => [...prev, newTaskData]);
+      if (result.data?.data?.task) {
+        console.log('Task created successfully:', result.data.data.task);
+        setTasks(prev => [...prev, result.data!.data.task]);
         setNewTask({ title: '', description: '' });
       } else if (result.error) {
+        console.log('Error creating task:', result.error);
         setError(result.error);
+      } else {
+        console.log('Unexpected response format:', result);
+        setError('Unexpected response format from server');
       }
     } catch (error) {
+      console.error('Error in handleCreateTask:', error);
       setError('Failed to create task');
-      console.error('Error creating task:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -96,7 +143,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
   const handleDeleteTask = async (taskId: string) => {
     try {
       setError(null);
-      const result = await fetchWithAuth<TaskDeleteResponse>(`/api/apps/task-manager/tasks/${taskId}`, {
+      const result = await fetchWithAuth<{ message: string }>(`/api/apps/task-manager/tasks/${taskId}`, {
         method: 'DELETE',
         body: JSON.stringify({
           account_id: accountId,
@@ -117,7 +164,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
   const handleUpdateStatus = async (taskId: string, newStatus: 'PENDING' | 'COMPLETED') => {
     try {
       setError(null);
-      const result = await fetchWithAuth<TaskUpdateResponse>(`/api/apps/task-manager/tasks/${taskId}/status`, {
+      const result = await fetchWithAuth<{ data: { task: Task } }>(`/api/apps/task-manager/tasks/${taskId}/status`, {
         method: 'PATCH',
         body: JSON.stringify({
           account_id: accountId,
@@ -127,7 +174,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
 
       if (result.data?.data?.task) {
         setTasks(prev => prev.map(task => 
-          task.id === taskId ? result.data.data.task : task
+          task.id === taskId ? result.data!.data.task : task
         ));
       } else if (result.error) {
         setError(result.error);

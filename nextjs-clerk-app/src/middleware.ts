@@ -6,8 +6,8 @@ export default authMiddleware({
   // Routes that can be accessed while signed out
   publicRoutes: [
     "/",
-    "/sign-in*",
-    "/sign-up*",
+    "/sign-in(.*)",
+    "/sign-up(.*)",
     "/api/health",
     "/apps(.*)"],
   
@@ -67,8 +67,11 @@ export default authMiddleware({
   },
 });
 
-// Update config to explicitly set runtime
+// Update config to match Clerk's requirements
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-  runtime: 'nodejs', // Force Node.js runtime
+  matcher: [
+    "/((?!.*\\..*|_next).*)",
+    "/",
+    "/(api|trpc)(.*)"
+  ]
 };
