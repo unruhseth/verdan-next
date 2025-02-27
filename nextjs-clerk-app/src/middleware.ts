@@ -9,7 +9,12 @@ export default authMiddleware({
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/api/health",
-    "/apps(.*)"],
+    "/apps(.*)",
+    "/favicon.ico",
+    "/_next/static/(.*)",
+    "/_next/image(.*)",
+    "/api/webhook(.*)"
+  ],
   
   // Routes that can always be accessed, and have
   // no authentication information
@@ -17,53 +22,48 @@ export default authMiddleware({
     "/api/health",
     "/_next/static/(.*)",
     "/favicon.ico",
+    "/api/webhook(.*)"
   ],
 
   // For all other routes, check auth and roles
   afterAuth(auth, req) {
-    // Handle public routes
-    if (!auth.userId && !auth.isPublicRoute) {
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return NextResponse.redirect(signInUrl);
-    }
-
-    // Get the role and normalize it
-    const role = auth.sessionClaims?.org_role as string;
-    const normalizedRole = role?.replace('-', '_');
-
-    // Get the current path segments
-    const path = req.nextUrl.pathname;
-    const segments = path.split('/').filter(Boolean);
-    const firstSegment = segments[0];
-
-    // Handle role-based routing
-    if (auth.userId) {
-      // Master admin can only access admin routes
-      if (normalizedRole === 'org:master_admin') {
-        if (firstSegment !== 'admin' && !auth.isPublicRoute) {
-          return NextResponse.redirect(new URL('/admin/dashboard', req.url));
-        }
-      } 
-      // Account admin can only access account-admin routes
-      else if (normalizedRole === 'org:account_admin') {
-        if (firstSegment !== 'account-admin' && !auth.isPublicRoute) {
-          return NextResponse.redirect(new URL('/account-admin/dashboard', req.url));
-        }
+    try {
+      // Handle public routes
+      if (!auth.userId && !auth.isPublicRoute) {
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', req.url);
+        return NextResponse.redirect(signInUrl);
       }
-      // Regular users can only access user routes
-      else if (normalizedRole === 'org:user') {
-        if (firstSegment !== 'user' && !auth.isPublicRoute) {
-          return NextResponse.redirect(new URL('/user/dashboard', req.url));
-        }
+
+      // Get the role and normalize it
+      const role = auth.sessionClaims?.org_role as string;
+      const normalizedRole = role?.replace('-', '_');
+
+      // Get the current path segments
+      const path = req.nextUrl.pathname;
+      
+      // Allow access to API routes
+      if (path.startsWith('/api/')) {
+        return NextResponse.next();
       }
-      // Unknown roles go to unauthorized
-      else if (!auth.isPublicRoute) {
+
+      // If no role is set, allow access to public routes only
+      if (!normalizedRole && !auth.isPublicRoute) {
         return NextResponse.redirect(new URL('/unauthorized', req.url));
       }
-    }
 
-    return NextResponse.next();
+      // If user is authenticated and it's a public route or matches their role, allow access
+      if (auth.userId && (auth.isPublicRoute || path.includes(normalizedRole))) {
+        return NextResponse.next();
+      }
+
+      // Default to next() for any other case
+      return NextResponse.next();
+    } catch (error) {
+      console.error('Middleware error:', error);
+      // In case of any error, allow the request to proceed
+      return NextResponse.next();
+    }
   },
 });
 
