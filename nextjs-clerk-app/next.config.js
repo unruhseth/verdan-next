@@ -6,21 +6,29 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
-  // Specify runtime configuration
-  serverRuntimeConfig: {
-    // Will only be available on the server side
-    runtime: 'nodejs',
+  // Configure runtime for specific paths
+  experimental: {
+    serverActions: true,
+    // Opt out of Edge Runtime for auth-related routes
+    runtime: {
+      nodejs: {
+        paths: [
+          '/api/**/*',
+          '/auth/**/*',
+          '/(auth)/**/*'
+        ]
+      }
+    }
   },
-  // Ignore the setImmediate warning since we're not using Edge Runtime
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        setImmediate: false,
-      };
+  // Suppress setImmediate warnings
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      Object.assign(config.resolve.alias, {
+        'scheduler/tracing': 'scheduler/tracing-profiling',
+      });
     }
     return config;
-  },
+  }
 }
 
 module.exports = nextConfig 
