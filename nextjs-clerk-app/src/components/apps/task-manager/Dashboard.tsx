@@ -13,6 +13,19 @@ interface Task {
   created_at: string;
 }
 
+// API response types
+type ApiResponse<T> = {
+  data?: {
+    data: T;
+  };
+  error?: string;
+};
+
+type TaskListResponse = ApiResponse<Task[]>;
+type TaskCreateResponse = ApiResponse<{ task: Task }>;
+type TaskUpdateResponse = ApiResponse<{ task: Task }>;
+type TaskDeleteResponse = ApiResponse<{ message: string }>;
+
 interface Props {
   accountId: string;
   isAdminView?: boolean;
@@ -34,7 +47,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
   const loadTasks = async () => {
     try {
       setIsLoading(true);
-      const result = await fetchWithAuth<{ data: Task[] }>(`/api/apps/task-manager/${accountId}/tasks`);
+      const result = await fetchWithAuth<TaskListResponse>(`/api/apps/task-manager/${accountId}/tasks`);
       
       if (result.data?.data) {
         setTasks(result.data.data);
@@ -56,7 +69,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
       setIsSubmitting(true);
       setError(null);
       
-      const result = await fetchWithAuth<{ data: { task: Task } }>('/api/apps/task-manager/tasks', {
+      const result = await fetchWithAuth<TaskCreateResponse>('/api/apps/task-manager/tasks', {
         method: 'POST',
         body: JSON.stringify({
           account_id: accountId,
@@ -65,8 +78,9 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
         }),
       });
 
-      if (result.data?.data?.task) {
-        setTasks(prev => [...prev, result.data.data.task]);
+      const newTaskData = result.data?.data?.task;
+      if (newTaskData) {
+        setTasks(prev => [...prev, newTaskData]);
         setNewTask({ title: '', description: '' });
       } else if (result.error) {
         setError(result.error);
@@ -82,7 +96,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
   const handleDeleteTask = async (taskId: string) => {
     try {
       setError(null);
-      const result = await fetchWithAuth<{ message: string }>(`/api/apps/task-manager/tasks/${taskId}`, {
+      const result = await fetchWithAuth<TaskDeleteResponse>(`/api/apps/task-manager/tasks/${taskId}`, {
         method: 'DELETE',
         body: JSON.stringify({
           account_id: accountId,
@@ -103,7 +117,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
   const handleUpdateStatus = async (taskId: string, newStatus: 'PENDING' | 'COMPLETED') => {
     try {
       setError(null);
-      const result = await fetchWithAuth<{ data: { task: Task } }>(`/api/apps/task-manager/tasks/${taskId}/status`, {
+      const result = await fetchWithAuth<TaskUpdateResponse>(`/api/apps/task-manager/tasks/${taskId}/status`, {
         method: 'PATCH',
         body: JSON.stringify({
           account_id: accountId,
