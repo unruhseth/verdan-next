@@ -6,27 +6,30 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
-  // Configure runtime for specific paths
+  // Disable Edge Runtime completely since we're using Node.js features
   experimental: {
     serverActions: true,
-    // Opt out of Edge Runtime for auth-related routes
-    runtime: {
-      nodejs: {
-        paths: [
-          '/api/**/*',
-          '/auth/**/*',
-          '/(auth)/**/*'
-        ]
-      }
-    }
+    runtime: 'nodejs'
   },
-  // Suppress setImmediate warnings
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      Object.assign(config.resolve.alias, {
-        'scheduler/tracing': 'scheduler/tracing-profiling',
-      });
+  // Handle webpack configuration
+  webpack: (config, { isServer }) => {
+    // Ignore specific Node.js modules in client-side code
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        net: false,
+        tls: false,
+        fs: false,
+        setImmediate: false,
+      };
     }
+
+    // Suppress warnings for specific modules
+    config.ignoreWarnings = [
+      { module: /node_modules\/scheduler/ },
+      { module: /node_modules\/@clerk/ }
+    ];
+
     return config;
   }
 }

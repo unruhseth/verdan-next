@@ -67,8 +67,8 @@ export default authMiddleware({
   },
 });
 
+// Update config to explicitly set runtime
 export const config = {
   matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
-  // Use Node.js runtime for auth routes
-  runtime: 'nodejs',
+  runtime: 'nodejs', // Force Node.js runtime
 };
