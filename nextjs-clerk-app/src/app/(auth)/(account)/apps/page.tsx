@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import AppsList from '@/components/apps/AppsList';
 
-export default function AccountAppsPage() {
+export default function MyAppsPage() {
   const [accountId, setAccountId] = useState<string | null>(null);
   const { getToken } = useAuth();
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function AccountAppsPage() {
 
   const handleAppClick = (app: any) => {
     if (accountId) {
-      router.push(`/apps/${app.app_key}/dashboard`);
+      router.push(`/auth/user/my-apps/${app.app_key}/dashboard`);
     }
   };
 
@@ -46,6 +46,7 @@ export default function AccountAppsPage() {
 
   return (
     <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">My Apps</h1>
       <AppsList
         accountId={accountId}
         onAppClick={handleAppClick}
