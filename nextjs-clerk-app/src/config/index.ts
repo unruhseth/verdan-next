@@ -5,7 +5,6 @@ interface Config {
   clerkPublishableKey: string;
   appName: string;
   defaultRedirects: {
-    afterSignIn: string;
     afterSignUp: string;
     onUnauthorized: string;
   };
@@ -25,7 +24,6 @@ const development: Config = {
   clerkPublishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
   appName: 'Verdan Platform (Dev)',
   defaultRedirects: {
-    afterSignIn: '/dashboard',
     afterSignUp: '/dashboard',
     onUnauthorized: '/sign-in',
   },
@@ -45,7 +43,6 @@ const production: Config = {
   clerkPublishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
   appName: 'Verdan Platform',
   defaultRedirects: {
-    afterSignIn: '/dashboard',
     afterSignUp: '/dashboard',
     onUnauthorized: '/sign-in',
   },
