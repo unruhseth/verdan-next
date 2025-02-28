@@ -17,7 +17,8 @@ export default function SignInPage() {
     if (isLoaded && user) {
       const role = user.organizationMemberships?.[0]?.role || 'org:user';
       const normalizedRole = role.replace('-', '_') as Role;
-      setDefaultRedirect(getDefaultRouteForRole(normalizedRole));
+      const roleBasedPath = getDefaultRouteForRole(normalizedRole);
+      setDefaultRedirect(roleBasedPath);
     }
   }, [isLoaded, user]);
 
@@ -35,7 +36,7 @@ export default function SignInPage() {
             formButtonPrimary: "bg-primary hover:bg-primary/90",
           }
         }}
-        redirectUrl={redirectUrl || defaultRedirect}
+        afterSignInUrl={defaultRedirect}
         signUpUrl="/sign-up"
         routing="path"
       />

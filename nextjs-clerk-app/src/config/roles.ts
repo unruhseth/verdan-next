@@ -82,8 +82,8 @@ export const getHighestRole = (roles: Role[]): Role => {
 
 export const ROLE_ROUTES = {
   'org:user': '/dashboard',
-  'org:account_admin': '/admin',
-  'org:master_admin': '/admin'
+  'org:account_admin': '/admin/dashboard',
+  'org:master_admin': '/admin/dashboard'
 } as const;
 
 export const getDefaultRouteForRole = (role: Role): string => {
