@@ -15,7 +15,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+        variables: {
+          colorPrimary: '#0F172A',
+        },
+      }}
+    >
       <html lang="en" className="h-full bg-gray-100">
         <head>
           <link 
