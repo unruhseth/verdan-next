@@ -14,12 +14,23 @@ export default authMiddleware({
     "/images(.*)",
     "/favicon.ico",
     "/api(.*)",
+    "/clerk(.*)", // Allow Clerk's own routes
   ],
   
   // For all other routes, check auth and roles
   afterAuth(auth, req) {
-    // Handle public routes
-    if (!auth.userId && !auth.isPublicRoute) {
+    // Get the current path segments
+    const path = req.nextUrl.pathname;
+    const segments = path.split('/').filter(Boolean);
+    const firstSegment = segments[0];
+
+    // Skip auth check for public routes
+    if (auth.isPublicRoute) {
+      return NextResponse.next();
+    }
+
+    // Redirect to sign in if not authenticated
+    if (!auth.userId) {
       const signInUrl = new URL('/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', req.url);
       return NextResponse.redirect(signInUrl);
@@ -28,11 +39,6 @@ export default authMiddleware({
     // Get the role and normalize it
     const role = auth.sessionClaims?.org_role as string;
     const normalizedRole = role?.replace('-', '_');
-
-    // Get the current path segments
-    const path = req.nextUrl.pathname;
-    const segments = path.split('/').filter(Boolean);
-    const firstSegment = segments[0];
 
     // Handle role-based routing
     if (auth.userId) {
@@ -55,7 +61,7 @@ export default authMiddleware({
         }
       }
       // Unknown roles go to unauthorized
-      else if (!auth.isPublicRoute) {
+      else {
         return NextResponse.redirect(new URL('/unauthorized', req.url));
       }
     }
