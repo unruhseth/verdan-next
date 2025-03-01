@@ -66,7 +66,8 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
       });
 
       if (result?.data?.data?.task) {
-        setTasks(prev => [...prev, result.data.data.task]);
+        const taskData = result.data.data.task;
+        setTasks(prev => [...prev, taskData]);
         setNewTask({ title: '', description: '' });
       } else if (result.error) {
         setError(result.error);
@@ -111,9 +112,10 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
         }),
       });
 
-      if (result.data?.data?.task) {
+      if (result?.data?.data?.task) {
+        const taskData = result.data.data.task;
         setTasks(prev => prev.map(task => 
-          task.id === taskId ? result.data.data.task : task
+          task.id === taskId ? taskData : task
         ));
       } else if (result.error) {
         setError(result.error);
