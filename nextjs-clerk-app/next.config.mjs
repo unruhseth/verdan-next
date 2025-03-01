@@ -12,6 +12,11 @@ const nextConfig = {
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/dashboard',
   },
 
+  // Domain configuration
+  images: {
+    domains: ['localhost', 'www.verdan.io', 'verdan.io'],
+  },
+
   // Configure headers for security
   async headers() {
     return [

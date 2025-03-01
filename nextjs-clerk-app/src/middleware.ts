@@ -60,6 +60,13 @@ export default authMiddleware({
 
     return NextResponse.next();
   },
+
+  // Debug mode for development
+  debug: process.env.NODE_ENV === 'development',
+
+  // Clerk domain configuration
+  apiUrl: process.env.NEXT_PUBLIC_CLERK_API_URL,
+  sdkUrl: process.env.NEXT_PUBLIC_CLERK_SDK_URL,
 });
 
 export const config = {
