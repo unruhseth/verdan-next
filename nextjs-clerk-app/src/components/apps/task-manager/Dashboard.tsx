@@ -65,7 +65,7 @@ export default function TaskManagerDashboard({ accountId, isAdminView = false }:
         }),
       });
 
-      if (result.data?.data?.task) {
+      if (result?.data?.data?.task) {
         setTasks(prev => [...prev, result.data.data.task]);
         setNewTask({ title: '', description: '' });
       } else if (result.error) {
