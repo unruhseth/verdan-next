@@ -6,7 +6,6 @@ const nextConfig = {
   // Environment variables that should be available to the client
   env: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    NEXT_PUBLIC_CLERK_DOMAIN: 'clerk.verdan.io',
     NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/sign-in',
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/sign-up',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
@@ -15,7 +14,7 @@ const nextConfig = {
 
   // Domain configuration
   images: {
-    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'clerk.verdan.io'],
+    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'img.clerk.com'],
   },
 
   // Configure headers for security
