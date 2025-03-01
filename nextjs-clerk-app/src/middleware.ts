@@ -6,12 +6,14 @@ export default authMiddleware({
   // Public routes that don't require login
   publicRoutes: [
     "/",
-    "/sign-in",
-    "/sign-up",
+    "/sign-in(.*)",
+    "/sign-up(.*)",
     "/unauthorized",
-    "/_next/static/(.*)",
+    "/_next(.*)",
+    "/fonts(.*)",
+    "/images(.*)",
     "/favicon.ico",
-    "/api/(.*)",
+    "/api(.*)",
   ],
   
   // For all other routes, check auth and roles
@@ -67,8 +69,8 @@ export default authMiddleware({
 
 export const config = {
   matcher: [
-    "/((?!.*\\..*|_next).*)",
-    "/",
-    "/(api|trpc)(.*)",
+    "/((?!.*\\.[\\w]+$|_next).*)", // Match all paths except static files
+    "/",                           // Match root
+    "/(api|trpc)(.*)",            // Match API routes
   ],
 };

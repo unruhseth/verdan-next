@@ -64,7 +64,25 @@ const nextConfig = {
     ];
 
     return config;
-  }
+  },
+
+  // Additional configuration for Clerk
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/:path*',
+          has: [
+            {
+              type: 'host',
+              value: 'www.verdan.io',
+            },
+          ],
+          destination: '/:path*',
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;
