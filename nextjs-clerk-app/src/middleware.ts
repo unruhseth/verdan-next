@@ -44,6 +44,7 @@ const clerkMiddleware = authMiddleware({
     "/debug", // Allow access to the debug page
     "/dns-check", // Allow access to the DNS check page
     "/api-test", // Allow access to the API test page
+    "/api-config", // Allow access to the API configuration page
   ],
   
   // For all other routes, check auth and roles
