@@ -10,13 +10,13 @@ const nextConfig = {
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/sign-up',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/dashboard',
-    NEXT_PUBLIC_CLERK_JS_URL: 'https://js.clerk.com',
-    NEXT_PUBLIC_CLERK_LOAD_JS: 'true',
+    // Match JWT template settings
+    NEXT_PUBLIC_CLERK_FRONTEND_API: 'https://clerk.verdan.io',
   },
 
   // Domain configuration
   images: {
-    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'img.clerk.com', 'js.clerk.com'],
+    domains: ['img.clerk.com', 'clerk.verdan.io'],
   },
 
   // Configure headers for security
@@ -46,41 +46,13 @@ const nextConfig = {
     ];
   },
 
-  // Handle webpack configuration
-  webpack: (config, { isServer }) => {
-    // Ignore specific Node.js modules in client-side code
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        net: false,
-        tls: false,
-        fs: false,
-        setImmediate: false,
-      };
-    }
-
-    // Suppress warnings for specific modules
-    config.ignoreWarnings = [
-      { module: /node_modules\/scheduler/ },
-      { module: /node_modules\/@clerk/ }
-    ];
-
-    return config;
-  },
-
   // Additional configuration for Clerk
   async rewrites() {
     return {
       beforeFiles: [
         {
-          source: '/:path*',
-          has: [
-            {
-              type: 'host',
-              value: 'www.verdan.io',
-            },
-          ],
-          destination: '/:path*',
+          source: '/clerk/:path*',
+          destination: 'https://clerk.verdan.io/:path*',
         },
       ],
     };
