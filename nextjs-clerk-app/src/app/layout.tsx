@@ -22,7 +22,8 @@ export default function RootLayout({
           colorPrimary: '#0F172A',
         },
       }}
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      // Note: Use either publishableKey OR frontendApi, not both
+      // Clerk's types enforce this constraint
       frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
       domain={process.env.NEXT_PUBLIC_CLERK_DOMAIN}
     >
