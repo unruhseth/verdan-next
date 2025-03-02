@@ -1,7 +1,6 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +22,14 @@ export default function RootLayout({
           colorPrimary: '#0F172A',
         },
       }}
-      navigate={(to) => window.location.href = to}
+      navigate={(to) => {
+        // Handle navigation more gracefully
+        if (to.startsWith('/')) {
+          window.location.href = to;
+        } else {
+          window.location.href = `/${to}`;
+        }
+      }}
     >
       <html lang="en" className="h-full bg-gray-100">
         <head>

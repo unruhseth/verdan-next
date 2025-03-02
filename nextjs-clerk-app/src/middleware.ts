@@ -21,20 +21,21 @@ export default authMiddleware({
   afterAuth(auth, req) {
     // Get the current path segments
     const path = req.nextUrl.pathname;
-    const segments = path.split('/').filter(Boolean);
-    const firstSegment = segments[0];
 
-    // Skip auth check for public routes
-    if (auth.isPublicRoute) {
+    // Always allow public routes without any additional checks
+    if (auth.isPublicRoute || path === "/") {
       return NextResponse.next();
     }
 
-    // If not authenticated or token expired, redirect to sign-in
-    if (!auth.userId || !auth.isPublicRoute) {
+    // If not authenticated, redirect to sign-in
+    if (!auth.userId) {
       const signInUrl = new URL('/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', req.url);
       return NextResponse.redirect(signInUrl);
     }
+
+    const segments = path.split('/').filter(Boolean);
+    const firstSegment = segments[0];
 
     // Get the role and normalize it
     const role = auth.sessionClaims?.org_role as string;
@@ -70,7 +71,7 @@ export default authMiddleware({
   },
 
   // Debug mode for development
-  debug: true, // Enable debug mode to see what's happening
+  debug: true,
 });
 
 export const config = {
