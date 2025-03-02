@@ -16,7 +16,6 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider
-      frontendApi="https://clerk.verdan.io"
       appearance={{
         baseTheme: undefined,
         variables: {

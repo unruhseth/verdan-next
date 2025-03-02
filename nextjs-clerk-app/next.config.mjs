@@ -10,13 +10,11 @@ const nextConfig = {
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/sign-up',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/dashboard',
-    // Match JWT template settings
-    NEXT_PUBLIC_CLERK_FRONTEND_API: 'https://clerk.verdan.io',
   },
 
   // Domain configuration
   images: {
-    domains: ['img.clerk.com', 'clerk.verdan.io'],
+    domains: ['img.clerk.com', 'images.clerk.dev'],
   },
 
   // Configure headers for security
@@ -44,18 +42,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-
-  // Additional configuration for Clerk
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/clerk/:path*',
-          destination: 'https://clerk.verdan.io/:path*',
-        },
-      ],
-    };
   },
 };
 
