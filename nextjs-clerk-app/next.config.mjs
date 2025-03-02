@@ -10,11 +10,13 @@ const nextConfig = {
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/sign-up',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/dashboard',
+    NEXT_PUBLIC_CLERK_JS_URL: 'https://js.clerk.com',
+    NEXT_PUBLIC_CLERK_LOAD_JS: 'true',
   },
 
   // Domain configuration
   images: {
-    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'img.clerk.com', 'frontend-api.clerk.services'],
+    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'img.clerk.com', 'js.clerk.com'],
   },
 
   // Configure headers for security
