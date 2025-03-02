@@ -1,8 +1,38 @@
 import { authMiddleware } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
 
-export default authMiddleware({
-  debug: process.env.NODE_ENV !== 'production', // Only enable debug in development
+// Debug middleware function to diagnose domain issues
+function debugMiddleware(req: NextRequest) {
+  // Log detailed information about requests, especially Clerk-related ones
+  console.log('========== CLERK DOMAIN DEBUG ==========');
+  console.log('URL:', req.url);
+  console.log('Hostname:', req.nextUrl.hostname);
+  console.log('Origin:', req.headers.get('origin'));
+  
+  // Look specifically for problematic clerk.www requests
+  if (req.nextUrl.hostname.includes('clerk.www')) {
+    console.log('PROBLEMATIC DOMAIN DETECTED: clerk.www');
+    console.log('Attempting to fix by redirecting to clerk subdomain...');
+    
+    // Try to redirect clerk.www.verdan.io to clerk.verdan.io
+    const newUrl = req.nextUrl.clone();
+    newUrl.hostname = newUrl.hostname.replace('clerk.www.', 'clerk.');
+    return NextResponse.redirect(newUrl);
+  }
+  
+  // Get any Clerk JS environment variables that might be set
+  console.log('CLERK ENV VARIABLES:');
+  console.log('NEXT_PUBLIC_CLERK_FRONTEND_API:', process.env.NEXT_PUBLIC_CLERK_FRONTEND_API);
+  console.log('NEXT_PUBLIC_CLERK_DOMAIN:', process.env.NEXT_PUBLIC_CLERK_DOMAIN);
+  
+  // Continue to the next middleware
+  return null;
+}
+
+// Create and export the combined middleware
+const clerkMiddleware = authMiddleware({
+  debug: true, // Enable Clerk's debug mode for troubleshooting
   // Public routes that don't require login
   publicRoutes: [
     "/",
@@ -77,6 +107,18 @@ export default authMiddleware({
   },
 });
 
+// Combine the debug middleware with the Clerk middleware
+export default function middleware(request: NextRequest) {
+  // First, run our debug middleware that may fix domain issues
+  const debugResponse = debugMiddleware(request);
+  if (debugResponse) return debugResponse;
+  
+  // Then, run the Clerk middleware for authentication
+  // @ts-ignore - The authMiddleware returns a function that takes a request
+  return clerkMiddleware(request);
+}
+
+// Export the same matcher configuration
 export const config = {
   matcher: [
     "/((?!.*\\.[\\w]+$|_next).*)", // Match all paths except static files
