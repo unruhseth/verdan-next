@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 
 // Debug middleware function to diagnose domain issues
 function debugMiddleware(req: NextRequest) {
-  // Log detailed information about requests, especially Clerk-related ones
+  // Log detailed information about requests
   console.log('========== CLERK DOMAIN DEBUG ==========');
   console.log('URL:', req.url);
   console.log('Hostname:', req.nextUrl.hostname);
@@ -13,17 +13,12 @@ function debugMiddleware(req: NextRequest) {
   // Look specifically for problematic clerk.www requests
   if (req.nextUrl.hostname.includes('clerk.www')) {
     console.log('PROBLEMATIC DOMAIN DETECTED: clerk.www');
-    console.log('Attempting to fix by redirecting to clerk subdomain...');
-    
-    // Try to redirect clerk.www.verdan.io to clerk.verdan.io
-    const newUrl = req.nextUrl.clone();
-    newUrl.hostname = newUrl.hostname.replace('clerk.www.', 'clerk.');
-    return NextResponse.redirect(newUrl);
+    console.log('This usually happens when NEXT_PUBLIC_CLERK_DOMAIN includes "www"');
+    console.log('The correct setting should be NEXT_PUBLIC_CLERK_DOMAIN=verdan.io (no www)');
   }
   
   // Get any Clerk JS environment variables that might be set
   console.log('CLERK ENV VARIABLES:');
-  console.log('NEXT_PUBLIC_CLERK_FRONTEND_API:', process.env.NEXT_PUBLIC_CLERK_FRONTEND_API);
   console.log('NEXT_PUBLIC_CLERK_DOMAIN:', process.env.NEXT_PUBLIC_CLERK_DOMAIN);
   
   // Continue to the next middleware
@@ -45,6 +40,8 @@ const clerkMiddleware = authMiddleware({
     "/favicon.ico",
     "/api(.*)",
     "/clerk(.*)", // Allow Clerk's own routes
+    "/test", // Allow access to the test page for diagnostics
+    "/debug", // Allow access to the debug page
   ],
   
   // For all other routes, check auth and roles

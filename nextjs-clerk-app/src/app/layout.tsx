@@ -34,11 +34,10 @@ export default function RootLayout({
             colorPrimary: '#0F172A',
           },
         }}
-        // Explicitly setting the Clerk domains
-        clerkJSUrl="https://clerk.verdan.io/npm/@clerk/clerk-js@4/dist/clerk.browser.js"
-        clerkJSVariant="headless"
-        frontendApi="clerk.verdan.io"
-        proxyUrl="https://www.verdan.io"
+        // CRITICAL FIX: Use the root domain (no www) as the domain
+        // This ensures Clerk loads from clerk.verdan.io rather than clerk.www.verdan.io
+        publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        domain="verdan.io"
       >
         <html lang="en" className="h-full bg-gray-100">
           <head>
