@@ -22,10 +22,11 @@ export default function RootLayout({
           colorPrimary: '#0F172A',
         },
       }}
-      // Note: Use either publishableKey OR frontendApi, not both
-      // Clerk's types enforce this constraint
-      frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
-      domain={process.env.NEXT_PUBLIC_CLERK_DOMAIN}
+      // Explicitly setting the Clerk domains
+      clerkJSUrl="https://clerk.verdan.io/npm/@clerk/clerk-js@4/dist/clerk.browser.js"
+      clerkJSVariant="headless"
+      frontendApi="clerk.verdan.io"
+      proxyUrl="https://www.verdan.io"
     >
       <html lang="en" className="h-full bg-gray-100">
         <head>
