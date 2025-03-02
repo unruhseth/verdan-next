@@ -14,8 +14,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const frontendApi = process.env.NEXT_PUBLIC_CLERK_FRONTEND_API;
+  if (!frontendApi) {
+    throw new Error('NEXT_PUBLIC_CLERK_FRONTEND_API is not set');
+  }
+
   return (
     <ClerkProvider
+      frontendApi={frontendApi}
       appearance={{
         baseTheme: undefined,
         variables: {
