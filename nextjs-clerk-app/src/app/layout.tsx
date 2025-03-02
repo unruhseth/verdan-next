@@ -22,14 +22,7 @@ export default function RootLayout({
           colorPrimary: '#0F172A',
         },
       }}
-      navigate={(to) => {
-        // Handle navigation more gracefully
-        if (to.startsWith('/')) {
-          window.location.href = to;
-        } else {
-          window.location.href = `/${to}`;
-        }
-      }}
+      navigate={(to) => window.location.assign(to)}
     >
       <html lang="en" className="h-full bg-gray-100">
         <head>
