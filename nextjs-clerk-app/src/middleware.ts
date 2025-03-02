@@ -29,8 +29,8 @@ export default authMiddleware({
       return NextResponse.next();
     }
 
-    // Redirect to sign in if not authenticated
-    if (!auth.userId) {
+    // If not authenticated or token expired, redirect to sign-in
+    if (!auth.userId || !auth.isPublicRoute) {
       const signInUrl = new URL('/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', req.url);
       return NextResponse.redirect(signInUrl);
@@ -70,7 +70,7 @@ export default authMiddleware({
   },
 
   // Debug mode for development
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Enable debug mode to see what's happening
 });
 
 export const config = {
