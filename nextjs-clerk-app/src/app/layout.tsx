@@ -22,6 +22,9 @@ export default function RootLayout({
           colorPrimary: '#0F172A',
         },
       }}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      frontendApi={process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}
+      domain={process.env.NEXT_PUBLIC_CLERK_DOMAIN}
     >
       <html lang="en" className="h-full bg-gray-100">
         <head>
