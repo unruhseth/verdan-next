@@ -14,7 +14,7 @@ const nextConfig = {
 
   // Domain configuration
   images: {
-    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'clerk.verdan.io', 'img.clerk.com'],
+    domains: ['localhost', 'www.verdan.io', 'verdan.io', 'img.clerk.com', 'frontend-api.clerk.services'],
   },
 
   // Configure headers for security
