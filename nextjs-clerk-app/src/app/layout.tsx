@@ -77,23 +77,20 @@ export default function RootLayout({
                 (function() {
                   console.log('Applying API URL Fix - Direct Patch');
                   
-                  // Store the correct API URL with proper protocol
-                  const correctApiUrl = 'https://www.api.verdan.io';
-                  
                   try {
                     // Monkey patch fetch to fix API URL issues
                     const originalFetch = window.fetch;
                     window.fetch = function(input, init) {
                       if (typeof input === 'string') {
-                        // Match the API URL pattern without protocol
-                        if (input.match(/(\\/+|^)www\\.api\\.verdan\\.io/) && !input.match(/^https?:\\/\\//)) {
-                          // Add the protocol and cleanup double-slashes
-                          const fixedUrl = 'https://www.api.verdan.io' + (input.startsWith('/') ? input : '/' + input);
+                        // Remove any incorrect prefixes and ensure we're using the correct domain
+                        if (input.includes('www.api.verdan.io')) {
+                          const path = input.split('www.api.verdan.io').pop();
+                          const fixedUrl = 'https://www.api.verdan.io' + path;
                           console.log('[API FIX] Original URL:', input, '-> Fixed URL:', fixedUrl);
                           input = fixedUrl;
                         }
                       }
-                      return originalFetch.apply(this, arguments);
+                      return originalFetch.call(this, input, init);
                     };
 
                     console.log('[API FIX] Successfully patched window.fetch to correct API URLs');

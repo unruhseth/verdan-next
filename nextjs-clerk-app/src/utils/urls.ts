@@ -7,7 +7,14 @@ export function getApiUrl(): string {
   if (!apiUrl) {
     throw new Error('NEXT_PUBLIC_API_URL environment variable is not set');
   }
-  return apiUrl;
+
+  // If the URL doesn't have a protocol, add https://
+  if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+    return `https://${apiUrl}`;
+  }
+
+  // Remove trailing slash if present
+  return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 }
 
 export const getImageUrl = (path: string) => {
