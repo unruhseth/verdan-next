@@ -82,7 +82,18 @@ export default function RootLayout({
                     const originalFetch = window.fetch;
                     window.fetch = function(input, init) {
                       if (typeof input === 'string') {
-                        // Remove www prefix from API domain
+                        console.log('[API DEBUG] Fetch URL:', input);
+                        console.log('[API DEBUG] Stack trace:', new Error().stack);
+
+                        // Fix URLs that incorrectly include the frontend domain
+                        if (input.startsWith('https://www.verdan.io/admin/')) {
+                          const path = input.replace('https://www.verdan.io/admin/', '');
+                          const fixedUrl = 'https://api.verdan.io/' + path;
+                          console.log('[API FIX] Original URL:', input, '-> Fixed URL:', fixedUrl);
+                          input = fixedUrl;
+                        }
+                        
+                        // Fix URLs with www in API domain
                         if (input.includes('www.api.verdan.io')) {
                           const path = input.split('www.api.verdan.io').pop();
                           const fixedUrl = 'https://api.verdan.io' + path;
@@ -92,6 +103,14 @@ export default function RootLayout({
                       }
                       return originalFetch.call(this, input, init);
                     };
+
+                    // Log environment variables for debugging
+                    console.log('[API DEBUG] Environment:', {
+                      NEXT_PUBLIC_API_URL: window.ENV?.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || 'not set',
+                      NODE_ENV: process.env.NODE_ENV,
+                      host: window.location.host,
+                      hostname: window.location.hostname
+                    });
 
                     console.log('[API FIX] Successfully patched window.fetch to correct API URLs');
                   } catch (e) {
