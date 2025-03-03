@@ -8,13 +8,20 @@ export function getApiUrl(): string {
     throw new Error('NEXT_PUBLIC_API_URL environment variable is not set');
   }
 
-  // If the URL doesn't have a protocol, add https://
-  if (!apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
-    return `https://${apiUrl}`;
+  // Remove any trailing slashes
+  let cleanUrl = apiUrl.replace(/\/+$/, '');
+
+  // If the URL doesn't include a protocol, add https://
+  if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`;
   }
 
-  // Remove trailing slash if present
-  return apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+  // Remove www prefix from API domain
+  if (cleanUrl.includes('www.api.verdan.io')) {
+    cleanUrl = cleanUrl.replace('www.api.verdan.io', 'api.verdan.io');
+  }
+
+  return cleanUrl;
 }
 
 export const getImageUrl = (path: string) => {
