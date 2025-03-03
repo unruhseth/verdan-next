@@ -45,14 +45,52 @@ export function getApiUrl(): string {
 
 export function buildApiUrl(path: string): string {
   const baseUrl = getApiUrl();
-  // Ensure path starts with a slash
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const fullUrl = `${baseUrl}${cleanPath}`;
-  debugLog.url('Built API URL:', {
-    baseUrl,
-    path: cleanPath,
-    fullUrl
+  debugLog.url('Building API URL from:', { baseUrl, path });
+
+  // Split path and query parameters
+  const [pathPart, ...queryParts] = path.split('?');
+  const queryString = queryParts.length > 0 ? `?${queryParts.join('?')}` : '';
+  debugLog.url('Split path and query:', { pathPart, queryString });
+
+  // If the path is already a full URL, extract just the path portion
+  let cleanPath = pathPart;
+  try {
+    const url = new URL(pathPart);
+    cleanPath = url.pathname;
+    debugLog.url('Extracted path from full URL:', cleanPath);
+  } catch (e) {
+    // Not a full URL, continue with path as is
+    debugLog.url('Path is not a full URL, using as is');
+  }
+
+  // Remove any domain references from the path
+  const domainPattern = /(https?:\/\/)?(www\.)?(api\.)?verdan\.io\/?/g;
+  cleanPath = cleanPath.replace(domainPattern, '');
+  debugLog.url('After removing domain references:', cleanPath);
+
+  // Clean up multiple slashes and ensure path starts with a single slash
+  cleanPath = cleanPath.replace(/\/+/g, '/');
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = `/${cleanPath}`;
+  }
+  debugLog.url('After cleaning slashes:', cleanPath);
+
+  // Remove duplicate path segments (e.g., /admin/admin/accounts -> /admin/accounts)
+  const segments = cleanPath.split('/').filter(Boolean);
+  const uniqueSegments = segments.filter((segment, index, array) => {
+    const nextSegment = array[index + 1];
+    return segment !== nextSegment;
   });
+  cleanPath = '/' + uniqueSegments.join('/');
+  debugLog.url('After removing duplicate segments:', cleanPath);
+
+  // Remove trailing slash
+  if (cleanPath.endsWith('/')) {
+    cleanPath = cleanPath.slice(0, -1);
+  }
+
+  const fullUrl = `${baseUrl}${cleanPath}${queryString}`;
+  debugLog.url('Final built API URL:', fullUrl);
   return fullUrl;
 }
 
@@ -60,4 +98,4 @@ export const getImageUrl = (path: string) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
   return buildApiUrl(path);
-}; 
+};
