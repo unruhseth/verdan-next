@@ -1,20 +1,20 @@
-module.exports = api => {
-  // Return false for non-test environments to tell Babel to ignore the config
-  if (!api.env('test')) {
-    return false;
+module.exports = function(api) {
+  // Cache the returned value forever and don't call this function again
+  api.cache(true);
+
+  // For test environment, return full config
+  if (api.env('test')) {
+    return {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
+        '@babel/preset-typescript',
+        'next/babel'
+      ]
+    };
   }
 
-  // Only use Babel for tests
+  // For non-test environments, return minimal config that lets Next.js handle it
   return {
-    presets: [
-      ['@babel/preset-env', { targets: { node: 'current' } }],
-      '@babel/preset-typescript',
-      ['next/babel', {
-        'preset-env': {},
-        'transform-runtime': {},
-        'styled-jsx': {},
-        'class-properties': {}
-      }]
-    ]
+    presets: ['next/babel']
   };
 }; 
