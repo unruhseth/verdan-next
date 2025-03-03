@@ -1,114 +1,174 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 export default function ApiTestPage() {
-  const [apiUrl, setApiUrl] = useState<string>('');
-  const [testResult, setTestResult] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
+  const [apiTests, setApiTests] = useState<{ endpoint: string; status: 'pending' | 'success' | 'error'; message: string }[]>([
+    { endpoint: '/accounts', status: 'pending', message: 'Not tested yet' },
+    { endpoint: '/apps', status: 'pending', message: 'Not tested yet' },
+    { endpoint: '/devices', status: 'pending', message: 'Not tested yet' },
+  ]);
+  
+  const [apiUrl, setApiUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [manualTestUrl, setManualTestUrl] = useState('');
+  const [manualTestResult, setManualTestResult] = useState<{status: 'pending' | 'success' | 'error', message: string}>({
+    status: 'pending',
+    message: 'Not tested yet'
+  });
 
   useEffect(() => {
-    // Get the API URL from environment variable
-    const url = process.env.NEXT_PUBLIC_API_URL || '';
-    setApiUrl(url);
+    // Get API URL from environment variable
+    const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    setApiUrl(configuredApiUrl);
+    
+    // Auto-populate the manual test field with a default endpoint
+    if (configuredApiUrl) {
+      setManualTestUrl(`${configuredApiUrl}/health-check`);
+    }
   }, []);
 
-  const testApiConnection = async () => {
-    setLoading(true);
-    setError(null);
-    setTestResult(null);
-
-    try {
-      // Make sure the URL has the right protocol
-      let testUrl = apiUrl;
-      if (!testUrl.startsWith('http://') && !testUrl.startsWith('https://')) {
-        testUrl = 'https://' + testUrl;
-      }
-
-      // Try to connect to the API
-      const response = await fetch(`${testUrl}/health`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        // Important: No credentials for the initial CORS test
-        credentials: 'omit',
-      });
-
-      const data = await response.json();
-      
-      setTestResult({
-        status: response.status,
-        statusText: response.statusText,
-        data,
-        headers: {
-          'content-type': response.headers.get('content-type'),
-          'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
-        }
-      });
-    } catch (err) {
-      console.error("API test failed:", err);
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      
-      // Try a CORS diagnostic
-      try {
-        await checkCorsIssue(apiUrl);
-      } catch (corsErr) {
-        console.error("CORS diagnostic failed:", corsErr);
-      }
-    } finally {
-      setLoading(false);
+  // Function to test all predefined API endpoints
+  const runAllTests = async () => {
+    if (!apiUrl) {
+      setApiTests(apiTests.map(test => ({
+        ...test,
+        status: 'error',
+        message: 'API URL is not configured'
+      })));
+      return;
     }
+
+    setLoading(true);
+    
+    // Create a copy of the tests to update
+    const updatedTests = [...apiTests];
+    
+    // Process each test one by one
+    for (let i = 0; i < updatedTests.length; i++) {
+      const test = updatedTests[i];
+      
+      // Update status to pending
+      updatedTests[i] = { ...test, status: 'pending', message: 'Testing...' };
+      setApiTests([...updatedTests]);
+      
+      try {
+        // Format the API URL properly, ensuring it has https:// prefix
+        let baseUrl = apiUrl;
+        if (baseUrl && !baseUrl.startsWith('http')) {
+          baseUrl = `https://${baseUrl}`;
+        }
+        
+        // Make the API request with proper format
+        const fullUrl = `${baseUrl}${test.endpoint}`;
+        console.log(`Testing API endpoint: ${fullUrl}`);
+        
+        const response = await fetch(fullUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+            // Add authorization if user is available
+            ...(user ? { 'Authorization': `Bearer ${user.id}` } : {}),
+          },
+          // Adding a cache buster to avoid cached responses
+          cache: 'no-store',
+        });
+        
+        if (response.ok) {
+          updatedTests[i] = { 
+            ...test, 
+            status: 'success', 
+            message: `Status: ${response.status} ${response.statusText}` 
+          };
+        } else {
+          updatedTests[i] = { 
+            ...test, 
+            status: 'error', 
+            message: `Failed with status: ${response.status} ${response.statusText}` 
+          };
+        }
+      } catch (error) {
+        updatedTests[i] = { 
+          ...test, 
+          status: 'error', 
+          message: error instanceof Error ? error.message : 'Unknown error occurred' 
+        };
+      }
+      
+      // Update the state with the current test results
+      setApiTests([...updatedTests]);
+    }
+    
+    setLoading(false);
   };
 
-  const checkCorsIssue = async (url: string) => {
-    if (!url) return;
-    
-    let testUrl = url;
-    if (!testUrl.startsWith('http://') && !testUrl.startsWith('https://')) {
-      testUrl = 'https://' + testUrl;
+  // Function to test a manual (user-specified) endpoint
+  const runManualTest = async () => {
+    if (!manualTestUrl) {
+      setManualTestResult({
+        status: 'error',
+        message: 'Please enter a URL to test'
+      });
+      return;
     }
+
+    setManualTestResult({
+      status: 'pending',
+      message: 'Testing...'
+    });
     
     try {
-      // Try a simple OPTIONS preflight request
-      const response = await fetch(testUrl, {
-        method: 'OPTIONS',
-        mode: 'cors',
+      // Determine if the URL contains http/https already
+      const url = manualTestUrl.startsWith('http') 
+        ? manualTestUrl 
+        : `https://${manualTestUrl}`;
+      
+      console.log(`Testing manual URL: ${url}`);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(user ? { 'Authorization': `Bearer ${user.id}` } : {}),
+        },
+        cache: 'no-store',
       });
       
-      setTestResult((prev: any) => ({
-        ...prev,
-        corsTest: {
-          success: response.ok,
-          status: response.status,
-          headers: {
-            'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
-            'access-control-allow-methods': response.headers.get('access-control-allow-methods'),
-            'access-control-allow-headers': response.headers.get('access-control-allow-headers'),
-          }
+      if (response.ok) {
+        let responseText = '';
+        try {
+          const data = await response.json();
+          responseText = JSON.stringify(data, null, 2);
+        } catch (e) {
+          responseText = await response.text();
         }
-      }));
-    } catch (err) {
-      setTestResult((prev: any) => ({
-        ...prev,
-        corsTest: {
-          success: false,
-          error: err instanceof Error ? err.message : 'CORS preflight failed'
-        }
-      }));
+        
+        setManualTestResult({ 
+          status: 'success', 
+          message: `Status: ${response.status} ${response.statusText}\n\nResponse:\n${responseText}` 
+        });
+      } else {
+        setManualTestResult({ 
+          status: 'error', 
+          message: `Failed with status: ${response.status} ${response.statusText}` 
+        });
+      }
+    } catch (error) {
+      setManualTestResult({ 
+        status: 'error', 
+        message: error instanceof Error ? error.message : 'Unknown error occurred' 
+      });
     }
   };
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">API Connection Test</h1>
+      <h1 className="text-2xl font-bold mb-6">API Connectivity Test</h1>
       
-      <div className="mb-6 p-4 bg-gray-100 rounded">
-        <h2 className="text-lg font-semibold mb-2">API Configuration</h2>
+      <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded">
+        <h2 className="text-lg font-semibold text-blue-800 mb-2">Configuration</h2>
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-1">Current API URL from environment:</p>
+          <p className="text-sm text-gray-600 mb-1">Configured API URL:</p>
           <div className="flex items-center">
             <code className="block bg-gray-200 p-2 rounded font-mono">
               {apiUrl || '(not set)'}
@@ -120,125 +180,134 @@ export default function ApiTestPage() {
             )}
           </div>
         </div>
-
-        <div className="mb-4">
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            onClick={testApiConnection}
-            disabled={loading || !apiUrl}
-          >
-            {loading ? 'Testing...' : 'Test API Connection'}
-          </button>
+        <div>
+          <p className="text-sm text-gray-600 mb-1">URL Used for Testing:</p>
+          <code className="block bg-gray-200 p-2 rounded font-mono">
+            {apiUrl && !apiUrl.startsWith('http') ? `https://${apiUrl}` : apiUrl || '(not set)'}
+          </code>
+        </div>
+        
+        {/* Authentication status */}
+        <div className="mt-4 pt-4 border-t border-blue-200">
+          <p className="text-sm text-gray-600 mb-1">Authentication Status:</p>
+          <div className="flex items-center">
+            <span className={`inline-block w-3 h-3 rounded-full mr-2 ${user ? 'bg-green-500' : 'bg-red-500'}`}></span>
+            <span>{user ? 'Authenticated' : 'Not Authenticated'}</span>
+          </div>
+          {user && (
+            <div className="mt-2 text-sm text-gray-600">
+              User ID: <code className="bg-gray-200 px-1 py-0.5 rounded">{user.id}</code>
+            </div>
+          )}
         </div>
       </div>
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded">
-          <h2 className="text-lg font-semibold text-red-700 mb-2">Error</h2>
-          <p className="text-red-600">{error}</p>
-          
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <h3 className="font-medium text-yellow-800">Troubleshooting Tips:</h3>
-            <ul className="mt-2 list-disc list-inside text-sm text-yellow-700 space-y-1">
-              <li>Make sure your API URL includes <code>https://</code> (e.g., https://api.verdan.io)</li>
-              <li>Check that your API server is running and accessible on the internet</li>
-              <li>Verify CORS settings on your API server allow requests from your frontend domain</li>
-              <li>Check network tab in developer tools for more detailed error information</li>
-            </ul>
-          </div>
+      
+      {/* Predefined API Tests */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Predefined API Tests</h2>
+          <button
+            onClick={runAllTests}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300"
+          >
+            {loading ? 'Running Tests...' : 'Run All Tests'}
+          </button>
         </div>
-      )}
-
-      {testResult && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Test Results</h2>
-          <div className="bg-gray-100 p-4 rounded">
-            <div className="mb-2">
-              <span className="font-medium">Status: </span>
-              <span className={testResult.status >= 200 && testResult.status < 300 ? 'text-green-600' : 'text-red-600'}>
-                {testResult.status} {testResult.statusText}
-              </span>
-            </div>
-            
-            {testResult.headers && (
-              <div className="mb-2">
-                <span className="font-medium">Headers:</span>
-                <pre className="mt-1 bg-gray-200 p-2 rounded text-xs overflow-x-auto">
-                  {JSON.stringify(testResult.headers, null, 2)}
-                </pre>
-              </div>
-            )}
-            
-            {testResult.data && (
-              <div className="mb-2">
-                <span className="font-medium">Response Data:</span>
-                <pre className="mt-1 bg-gray-200 p-2 rounded text-xs overflow-x-auto">
-                  {JSON.stringify(testResult.data, null, 2)}
-                </pre>
-              </div>
-            )}
-
-            {testResult.corsTest && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-                <h3 className="font-medium text-blue-800">CORS Diagnostic:</h3>
-                <div className="mt-1 text-sm">
-                  <div className="mb-1">
-                    <span className="font-medium">Success: </span>
-                    <span className={testResult.corsTest.success ? 'text-green-600' : 'text-red-600'}>
-                      {testResult.corsTest.success ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                  
-                  {testResult.corsTest.headers && (
+        
+        <div className="bg-white shadow overflow-hidden rounded-md">
+          <ul className="divide-y divide-gray-200">
+            {apiTests.map((test, index) => (
+              <li key={index} className="px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className={`inline-block w-3 h-3 rounded-full mr-3
+                      ${test.status === 'success' ? 'bg-green-500' : 
+                        test.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'}`}
+                    ></span>
                     <div>
-                      <span className="font-medium">CORS Headers:</span>
-                      <pre className="mt-1 bg-gray-200 p-2 rounded text-xs overflow-x-auto">
-                        {JSON.stringify(testResult.corsTest.headers, null, 2)}
-                      </pre>
+                      <p className="font-medium">{apiUrl}{test.endpoint}</p>
+                      <p className={`text-sm ${
+                        test.status === 'success' ? 'text-green-600' : 
+                        test.status === 'error' ? 'text-red-600' : 'text-yellow-600'
+                      }`}>
+                        {test.message}
+                      </p>
                     </div>
-                  )}
-                  
-                  {testResult.corsTest.error && (
-                    <div className="text-red-600">
-                      Error: {testResult.corsTest.error}
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      
+      {/* Manual API Test */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-4">Test Custom Endpoint</h2>
+        
+        <div className="mb-4">
+          <div className="flex">
+            <input
+              type="text"
+              value={manualTestUrl}
+              onChange={(e) => setManualTestUrl(e.target.value)}
+              placeholder="Enter API URL to test"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              onClick={runManualTest}
+              className="px-4 py-2 bg-blue-600 text-white rounded-r hover:bg-blue-700"
+            >
+              Test
+            </button>
           </div>
         </div>
-      )}
-
-      <div className="mt-8 p-4 bg-gray-100 rounded">
-        <h2 className="text-lg font-semibold mb-2">API Configuration Guide</h2>
         
-        <p className="mb-4">
-          The frontend needs to communicate with your backend API. Make sure:
-        </p>
+        {manualTestResult.status !== 'pending' && (
+          <div className={`p-4 rounded ${
+            manualTestResult.status === 'success' ? 'bg-green-50 border border-green-200' : 
+            'bg-red-50 border border-red-200'
+          }`}>
+            <h3 className={`font-medium ${
+              manualTestResult.status === 'success' ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {manualTestResult.status === 'success' ? 'Success' : 'Error'}
+            </h3>
+            <pre className="mt-2 text-sm overflow-auto p-2 bg-black bg-opacity-5 rounded">
+              {manualTestResult.message}
+            </pre>
+          </div>
+        )}
+      </div>
+      
+      {/* Troubleshooting Guide */}
+      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+        <h2 className="text-lg font-semibold text-yellow-800 mb-2">Troubleshooting</h2>
         
-        <ol className="list-decimal list-inside space-y-2 mb-4">
-          <li>
-            <strong>NEXT_PUBLIC_API_URL</strong> is set correctly in Vercel environment variables
-            <div className="ml-6 mt-1 text-sm text-gray-600">
-              Example: <code className="bg-gray-200 px-1 py-0.5 rounded">https://api.verdan.io</code> (include https://)
-            </div>
-          </li>
-          
-          <li>
-            <strong>CORS is enabled</strong> on your API server
-            <div className="ml-6 mt-1 text-sm text-gray-600">
-              Your API must allow requests from: <code className="bg-gray-200 px-1 py-0.5 rounded">https://www.verdan.io</code>
-            </div>
-          </li>
-          
-          <li>
-            <strong>API endpoints</strong> match what your frontend expects
-            <div className="ml-6 mt-1 text-sm text-gray-600">
-              Check that API routes are correctly implemented and accessible
-            </div>
-          </li>
-        </ol>
+        <div className="mb-4">
+          <h3 className="font-medium text-yellow-700">If tests are failing:</h3>
+          <ul className="mt-2 list-disc list-inside text-sm text-yellow-700 space-y-1">
+            <li>Check that your API server is running and accessible</li>
+            <li>Verify that CORS is properly configured on your API server</li>
+            <li>Make sure your API URL includes the <code>https://</code> protocol</li>
+            <li>Check that you're authenticated if the endpoints require authentication</li>
+            <li>Verify that the endpoints exist and are spelled correctly</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 className="font-medium text-yellow-700">Environment Variables:</h3>
+          <p className="mt-1 text-sm text-yellow-700">
+            Update your environment variables in the Vercel dashboard:
+          </p>
+          <ol className="mt-2 list-decimal list-inside text-sm text-yellow-700 space-y-1">
+            <li>Go to your Vercel project dashboard</li>
+            <li>Navigate to Settings &gt; Environment Variables</li>
+            <li>Set <code>NEXT_PUBLIC_API_URL</code> to <code>https://www.api.verdan.io</code></li>
+            <li>Redeploy your application</li>
+          </ol>
+        </div>
       </div>
     </div>
   );
