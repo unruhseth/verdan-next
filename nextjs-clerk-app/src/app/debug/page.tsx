@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { getApiUrl, buildApiUrl } from '@/utils/urls';
+import { buildApiUrl } from '@/utils/urls';
 import { debugFetch, debugLog } from '@/utils/debug';
 
 export default function DebugPage() {
@@ -14,9 +14,7 @@ export default function DebugPage() {
   useEffect(() => {
     // Test URL construction
     try {
-      const baseUrl = getApiUrl();
       const testUrls = {
-        base: baseUrl,
         accounts: buildApiUrl('/admin/accounts'),
         health: buildApiUrl('/health'),
       };
@@ -64,7 +62,8 @@ export default function DebugPage() {
       setTestResponse('Testing direct fetch...');
       
       const token = await getToken();
-      const response = await fetch('https://api.verdan.io/admin/accounts', {
+      const url = buildApiUrl('/admin/accounts');
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

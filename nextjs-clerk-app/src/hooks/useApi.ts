@@ -1,7 +1,5 @@
 import { useAuth, useUser } from '@clerk/nextjs';
-import { getApiUrl } from '@/utils/urls';
-
-const API_BASE_URL = getApiUrl();
+import { buildApiUrl } from '@/utils/urls';
 
 interface ApiResponse<T> {
   data?: T;
@@ -29,13 +27,14 @@ export const useApi = () => {
         'Accept': 'application/json',
       };
 
-      console.log(`Making request to ${API_BASE_URL}${endpoint}`, {
+      const url = buildApiUrl(endpoint);
+      console.log(`Making request to ${url}`, {
         method: options.method || 'GET',
         headers,
         body: options.body,
       });
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(url, {
         ...options,
         headers,
         mode: 'cors',
