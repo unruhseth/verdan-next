@@ -1,6 +1,7 @@
 import { useAuth, useUser } from '@clerk/nextjs';
+import { getApiUrl } from '@/utils/urls';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = getApiUrl();
 
 interface ApiResponse<T> {
   data?: T;

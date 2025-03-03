@@ -1,15 +1,12 @@
 /**
  * Application configuration
  */
+import { getApiUrl } from './urls';
 
 // API configuration
 export const API_CONFIG = {
-  // Get the API URL, ensuring it has the proper protocol
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL 
-    ? (process.env.NEXT_PUBLIC_API_URL.startsWith('http') 
-      ? process.env.NEXT_PUBLIC_API_URL 
-      : `https://${process.env.NEXT_PUBLIC_API_URL}`)
-    : '',
+  // Get the API URL from the centralized getApiUrl function
+  BASE_URL: getApiUrl(),
     
   // Common API endpoints
   ENDPOINTS: {
@@ -26,11 +23,11 @@ export const API_CONFIG = {
 export function checkConfig(): { valid: boolean; issues: string[] } {
   const issues: string[] = [];
   
-  // Check API URL
-  if (!API_CONFIG.BASE_URL) {
-    issues.push('NEXT_PUBLIC_API_URL environment variable is not set');
-  } else if (!API_CONFIG.BASE_URL.startsWith('http')) {
-    issues.push('NEXT_PUBLIC_API_URL should start with http:// or https://');
+  try {
+    // This will throw if API URL is not set
+    getApiUrl();
+  } catch (e) {
+    issues.push(e instanceof Error ? e.message : 'Failed to get API URL');
   }
   
   return {
