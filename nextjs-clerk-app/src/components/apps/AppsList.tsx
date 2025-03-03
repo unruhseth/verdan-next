@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import AppCard from '@/components/AppCard';
+import { getApiUrl } from '@/utils/urls';
 
 interface App {
   id: string;
@@ -31,7 +32,7 @@ export default function AppsList({ accountId, isAdmin = false, onAppClick }: App
       setIsLoading(true);
       const token = await getToken();
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/accounts/${accountId}/apps/installed`,
+        `${getApiUrl()}/admin/accounts/${accountId}/apps/installed`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
