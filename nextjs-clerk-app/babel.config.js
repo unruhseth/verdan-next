@@ -1,9 +1,8 @@
 module.exports = function(api) {
-  // Cache the returned value forever and don't call this function again
-  api.cache(true);
+  const isTest = api.env('test');
 
   // For test environment, return full config
-  if (api.env('test')) {
+  if (isTest) {
     return {
       presets: [
         ['@babel/preset-env', { targets: { node: 'current' } }],
