@@ -82,10 +82,10 @@ export default function RootLayout({
                     const originalFetch = window.fetch;
                     window.fetch = function(input, init) {
                       if (typeof input === 'string') {
-                        // Remove any incorrect prefixes and ensure we're using the correct domain
+                        // Remove www prefix from API domain
                         if (input.includes('www.api.verdan.io')) {
                           const path = input.split('www.api.verdan.io').pop();
-                          const fixedUrl = 'https://www.api.verdan.io' + path;
+                          const fixedUrl = 'https://api.verdan.io' + path;
                           console.log('[API FIX] Original URL:', input, '-> Fixed URL:', fixedUrl);
                           input = fixedUrl;
                         }
