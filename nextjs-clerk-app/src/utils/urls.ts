@@ -7,6 +7,7 @@ import { debugLog } from './debug';
 export function getApiUrl(): string {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   debugLog.env('NEXT_PUBLIC_API_URL:', apiUrl);
+  debugLog.env('Window Location:', typeof window !== 'undefined' ? window.location.href : 'server-side');
 
   if (!apiUrl) {
     const error = new Error('NEXT_PUBLIC_API_URL environment variable is not set');
@@ -30,14 +31,33 @@ export function getApiUrl(): string {
     debugLog.url('After removing www prefix:', cleanUrl);
   }
 
+  // Ensure URL is treated as absolute by checking if it's a valid URL
+  try {
+    new URL(cleanUrl);
+  } catch (e) {
+    debugLog.error('Invalid URL format:', cleanUrl);
+    throw new Error(`Invalid API URL format: ${cleanUrl}`);
+  }
+
   debugLog.url('Final API URL:', cleanUrl);
   return cleanUrl;
+}
+
+export function buildApiUrl(path: string): string {
+  const baseUrl = getApiUrl();
+  // Ensure path starts with a slash
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const fullUrl = `${baseUrl}${cleanPath}`;
+  debugLog.url('Built API URL:', {
+    baseUrl,
+    path: cleanPath,
+    fullUrl
+  });
+  return fullUrl;
 }
 
 export const getImageUrl = (path: string) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  const url = `${getApiUrl()}${path}`;
-  debugLog.url('Image URL:', url);
-  return url;
+  return buildApiUrl(path);
 }; 
