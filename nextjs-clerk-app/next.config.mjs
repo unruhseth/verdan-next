@@ -8,17 +8,29 @@ const nextConfig = {
     domains: ['img.clerk.com', 'images.clerk.dev'],
   },
 
-  // Configure rewrites for development
+  // Configure rewrites for development and production
   async rewrites() {
+    const rewrites = [
+      // API rewrites
+      {
+        source: '/admin/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/:path*',
+      },
+      {
+        source: '/api/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*',
+      }
+    ];
+
+    // Add development-specific rewrites
     if (process.env.NODE_ENV === 'development') {
-      return [
-        {
-          source: '/api/:path*',
-          destination: 'http://localhost:3000/api/:path*',
-        },
-      ];
+      rewrites.push({
+        source: '/api/:path*',
+        destination: 'http://localhost:3000/api/:path*',
+      });
     }
-    return [];
+
+    return rewrites;
   },
 
   // Configure headers for security

@@ -2,20 +2,16 @@ import { debugLog } from './debug';
 
 /**
  * Get the API URL
- * @returns The base API URL
+ * @returns The base API URL for direct API calls
  */
 export function getApiUrl(): string {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  debugLog.env('NEXT_PUBLIC_API_URL:', apiUrl);
-
-  if (!apiUrl) {
-    const error = new Error('NEXT_PUBLIC_API_URL environment variable is not set');
-    debugLog.error('API URL Error:', error);
-    throw error;
+  // In development, use the local API
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
   }
-
-  // Remove trailing slash if present
-  return apiUrl.replace(/\/$/, '');
+  
+  // In production, use the relative path (handled by Next.js rewrites)
+  return '';
 }
 
 export function buildApiUrl(path: string): string {
