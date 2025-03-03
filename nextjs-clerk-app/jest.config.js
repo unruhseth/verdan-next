@@ -6,6 +6,9 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+    // Transform test files with Babel
+    '^.+\\.(test|spec)\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+    // Use SWC for all other files
+    '^.+\\.(js|jsx|ts|tsx)$': ['@swc/jest'],
   },
 }; 
