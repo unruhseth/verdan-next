@@ -70,6 +70,39 @@ export default function RootLayout({
                 };
               `}
             </Script>
+
+            {/* API URL FIX SCRIPT - Added to fix missing https:// in API URL */}
+            <Script id="api-url-fix" strategy="beforeInteractive">
+              {`
+                (function() {
+                  console.log('Applying API URL Fix - Direct Patch');
+                  
+                  // Store the correct API URL with proper protocol
+                  const correctApiUrl = 'https://www.api.verdan.io';
+                  
+                  try {
+                    // Monkey patch fetch to fix API URL issues
+                    const originalFetch = window.fetch;
+                    window.fetch = function(input, init) {
+                      if (typeof input === 'string') {
+                        // Match the API URL pattern without protocol
+                        if (input.match(/(\\/+|^)www\\.api\\.verdan\\.io/) && !input.match(/^https?:\\/\\//)) {
+                          // Add the protocol and cleanup double-slashes
+                          const fixedUrl = 'https://www.api.verdan.io' + (input.startsWith('/') ? input : '/' + input);
+                          console.log('[API FIX] Original URL:', input, '-> Fixed URL:', fixedUrl);
+                          input = fixedUrl;
+                        }
+                      }
+                      return originalFetch.apply(this, arguments);
+                    };
+
+                    console.log('[API FIX] Successfully patched window.fetch to correct API URLs');
+                  } catch (e) {
+                    console.error('[API FIX] Error applying API URL fix:', e);
+                  }
+                })();
+              `}
+            </Script>
           </head>
           <body className={`${inter.className} h-full`}>
             {children}
