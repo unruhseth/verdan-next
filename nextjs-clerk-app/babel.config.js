@@ -1,19 +1,20 @@
 module.exports = api => {
-  const isTest = api.env('test');
-  
-  // Only use custom Babel config for tests
-  if (isTest) {
-    return {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-        '@babel/preset-typescript',
-        'next/babel',
-      ],
-    };
+  // Return false for non-test environments to tell Babel to ignore the config
+  if (!api.env('test')) {
+    return false;
   }
 
-  // For production builds, use Next.js default SWC configuration
+  // Only use Babel for tests
   return {
-    presets: ['next/babel'],
+    presets: [
+      ['@babel/preset-env', { targets: { node: 'current' } }],
+      '@babel/preset-typescript',
+      ['next/babel', {
+        'preset-env': {},
+        'transform-runtime': {},
+        'styled-jsx': {},
+        'class-properties': {}
+      }]
+    ]
   };
 }; 
