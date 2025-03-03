@@ -8,6 +8,19 @@ const nextConfig = {
     domains: ['img.clerk.com', 'images.clerk.dev'],
   },
 
+  // Configure rewrites for development
+  async rewrites() {
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:3000/api/:path*',
+        },
+      ];
+    }
+    return [];
+  },
+
   // Configure headers for security
   async headers() {
     return [
