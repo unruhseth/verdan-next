@@ -34,10 +34,10 @@ export default function RootLayout({
             colorPrimary: '#0F172A',
           },
         }}
-        // CRITICAL FIX: Use the root domain (no www) as the domain
-        // This ensures Clerk loads from clerk.verdan.io rather than clerk.www.verdan.io
+        // CRITICAL FIX: Use the environment variable for the domain
+        // Make sure NEXT_PUBLIC_CLERK_DOMAIN=verdan.io is set in Vercel
         publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        domain="verdan.io"
+        domain={process.env.NEXT_PUBLIC_CLERK_DOMAIN}
       >
         <html lang="en" className="h-full bg-gray-100">
           <head>
