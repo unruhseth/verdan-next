@@ -11,8 +11,6 @@ const debugConfig = {
   NEXT_PUBLIC_CLERK_DOMAIN: process.env.NEXT_PUBLIC_CLERK_DOMAIN,
   NEXT_PUBLIC_CLERK_FRONTEND_API: process.env.NEXT_PUBLIC_CLERK_FRONTEND_API,
   host: typeof window !== 'undefined' ? window.location.host : 'server-side',
-  protocol: typeof window !== 'undefined' ? window.location.protocol : 'server-side',
-  currentUrl: typeof window !== 'undefined' ? window.location.href : 'server-side',
 };
 
 export const metadata = {
@@ -59,64 +57,6 @@ export default function RootLayout({
                   console.log('Clerk global object:', window.Clerk ? 'Available' : 'Not available');
                   console.log('Clerk config:', window.__clerk_frontend_api, window.__clerk_domain);
                 });
-
-                // Log all network requests to catch Clerk loading
-                const originalFetch = window.fetch;
-                window.fetch = function(url, options) {
-                  if (typeof url === 'string' && url.includes('clerk')) {
-                    console.log('FETCH to Clerk URL:', url);
-                  }
-                  return originalFetch.apply(this, arguments);
-                };
-              `}
-            </Script>
-
-            {/* API URL FIX SCRIPT - Added to fix missing https:// in API URL */}
-            <Script id="api-url-fix" strategy="beforeInteractive">
-              {`
-                (function() {
-                  console.log('Applying API URL Fix - Direct Patch');
-                  
-                  try {
-                    // Monkey patch fetch to fix API URL issues
-                    const originalFetch = window.fetch;
-                    window.fetch = function(input, init) {
-                      if (typeof input === 'string') {
-                        console.log('[API DEBUG] Fetch URL:', input);
-                        console.log('[API DEBUG] Stack trace:', new Error().stack);
-
-                        // Fix URLs that incorrectly include the frontend domain
-                        if (input.startsWith('https://www.verdan.io/admin/')) {
-                          const path = input.replace('https://www.verdan.io/admin/', '');
-                          const fixedUrl = 'https://api.verdan.io/' + path;
-                          console.log('[API FIX] Original URL:', input, '-> Fixed URL:', fixedUrl);
-                          input = fixedUrl;
-                        }
-                        
-                        // Fix URLs with www in API domain
-                        if (input.includes('www.api.verdan.io')) {
-                          const path = input.split('www.api.verdan.io').pop();
-                          const fixedUrl = 'https://api.verdan.io' + path;
-                          console.log('[API FIX] Original URL:', input, '-> Fixed URL:', fixedUrl);
-                          input = fixedUrl;
-                        }
-                      }
-                      return originalFetch.call(this, input, init);
-                    };
-
-                    // Log environment variables for debugging
-                    console.log('[API DEBUG] Environment:', {
-                      NEXT_PUBLIC_API_URL: window.ENV?.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || 'not set',
-                      NODE_ENV: process.env.NODE_ENV,
-                      host: window.location.host,
-                      hostname: window.location.hostname
-                    });
-
-                    console.log('[API FIX] Successfully patched window.fetch to correct API URLs');
-                  } catch (e) {
-                    console.error('[API FIX] Error applying API URL fix:', e);
-                  }
-                })();
               `}
             </Script>
           </head>
