@@ -64,7 +64,7 @@ export function buildApiUrl(path: string): string {
   }
 
   // Remove any domain references from the path
-  const domainPattern = /(https?:\/\/)?(www\.)?(api\.)?verdan\.io\/?/g;
+  const domainPattern = /(https?:\/\/)?(www\.)?(api\.)?(www\.)?verdan\.io(\/|$)/g;
   cleanPath = cleanPath.replace(domainPattern, '');
   debugLog.url('After removing domain references:', cleanPath);
 
@@ -75,9 +75,12 @@ export function buildApiUrl(path: string): string {
   }
   debugLog.url('After cleaning slashes:', cleanPath);
 
-  // Remove duplicate path segments (e.g., /admin/admin/accounts -> /admin/accounts)
+  // Remove duplicate path segments and handle edge cases
   const segments = cleanPath.split('/').filter(Boolean);
   const uniqueSegments = segments.filter((segment, index, array) => {
+    // Skip segments that are part of the domain or duplicates
+    if (segment.includes('verdan.io')) return false;
+    if (segment === 'www' || segment === 'api') return false;
     const nextSegment = array[index + 1];
     return segment !== nextSegment;
   });

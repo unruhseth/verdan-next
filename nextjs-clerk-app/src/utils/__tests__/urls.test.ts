@@ -82,6 +82,18 @@ describe('URL Utilities', () => {
         {
           input: 'https://api.verdan.io/admin/accounts',
           expected: 'https://api.verdan.io/admin/accounts'
+        },
+        {
+          input: '/admin/www.api.verdan.io/admin/accounts',
+          expected: 'https://api.verdan.io/admin/accounts'
+        },
+        {
+          input: 'www.verdan.io/admin/accounts',
+          expected: 'https://api.verdan.io/admin/accounts'
+        },
+        {
+          input: '/admin/www.verdan.io/admin/accounts',
+          expected: 'https://api.verdan.io/admin/accounts'
         }
       ];
 
