@@ -11,11 +11,22 @@ const nextConfig = {
   // Configure rewrites for development and production
   async rewrites() {
     const rewrites = [
-      // API rewrites
+      // Handle malformed admin paths with domain
+      {
+        source: '/admin/:slug*/admin/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/:path*',
+      },
+      // Handle normal admin paths
       {
         source: '/admin/:path*',
         destination: process.env.NEXT_PUBLIC_API_URL + '/admin/:path*',
       },
+      // Handle malformed API paths with domain
+      {
+        source: '/api/:slug*/api/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*',
+      },
+      // Handle normal API paths
       {
         source: '/api/:path*',
         destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*',

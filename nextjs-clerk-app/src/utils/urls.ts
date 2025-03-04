@@ -17,8 +17,14 @@ export function getApiUrl(): string {
 export function buildApiUrl(path: string): string {
   const baseUrl = getApiUrl();
   
-  // Ensure path starts with a slash
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  // Clean the path by removing any domain references
+  let cleanPath = path;
+  
+  // Remove any domain references from the path
+  cleanPath = cleanPath.replace(/(https?:\/\/)?(www\.)?(api\.)?verdan\.io\/?/g, '');
+  
+  // Ensure path starts with a slash and remove duplicate slashes
+  cleanPath = '/' + cleanPath.split('/').filter(Boolean).join('/');
   
   return `${baseUrl}${cleanPath}`;
 }
