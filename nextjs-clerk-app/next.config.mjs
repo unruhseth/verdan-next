@@ -24,6 +24,23 @@ const nextConfig = {
     ];
   },
 
+  // Redirect non-www to www
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'verdan.io',
+          },
+        ],
+        destination: 'https://www.verdan.io/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   // Configure headers for security
   async headers() {
     return [
