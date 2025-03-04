@@ -11,10 +11,18 @@ const nextConfig = {
   // Configure rewrites for development and production
   async rewrites() {
     return [
-      // Handle admin paths
+      // Handle specific admin API paths
       {
-        source: '/admin/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/:path*',
+        source: '/admin/accounts/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/accounts/:path*',
+      },
+      {
+        source: '/admin/users/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/users/:path*',
+      },
+      {
+        source: '/admin/apps/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/apps/:path*',
       },
       // Handle API paths
       {
