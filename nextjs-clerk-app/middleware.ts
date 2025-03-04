@@ -1,4 +1,5 @@
 import { authMiddleware } from "@clerk/nextjs";
+import { NextResponse } from "next/server";
 
 export default authMiddleware({
   // Routes that can be accessed while signed out
@@ -10,15 +11,31 @@ export default authMiddleware({
 
   // Ensure admin routes are protected
   afterAuth(auth, req, evt) {
+    // Log request information
+    console.log('Middleware processing:', {
+      pathname: req.nextUrl.pathname,
+      userId: auth.userId,
+      isPublicRoute: req.nextUrl.pathname === '/' || req.nextUrl.pathname === '/sign-in' || req.nextUrl.pathname === '/sign-up',
+      host: req.headers.get('host'),
+    });
+
     // Handle admin routes
     if (req.nextUrl.pathname.startsWith('/admin')) {
-      // Redirect if not authenticated
+      // If not authenticated, redirect to sign in
       if (!auth.userId) {
+        console.log('Redirecting unauthenticated user to sign in');
         const signInUrl = new URL('/sign-in', req.url);
         signInUrl.searchParams.set('redirect_url', req.url);
         return Response.redirect(signInUrl);
       }
+
+      // User is authenticated, allow access
+      console.log('Allowing authenticated access to admin route');
+      return NextResponse.next();
     }
+
+    // For all other routes, continue
+    return NextResponse.next();
   }
 });
 
