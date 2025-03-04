@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { buildApiUrl } from '@/utils/urls';
 
 interface DebugInfo {
@@ -14,7 +14,13 @@ interface DebugInfo {
   env: {
     NEXT_PUBLIC_API_URL?: string;
     NEXT_PUBLIC_CLERK_DOMAIN?: string;
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
     NODE_ENV?: string;
+  };
+  clerk?: {
+    userId?: string | null;
+    sessionId?: string | null;
+    token?: string | null;
   };
   request?: {
     url: string;
@@ -29,14 +35,26 @@ export default function TestPage() {
     env: {
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
       NEXT_PUBLIC_CLERK_DOMAIN: process.env.NEXT_PUBLIC_CLERK_DOMAIN,
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
       NODE_ENV: process.env.NODE_ENV,
     }
   });
   const [accounts, setAccounts] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { getToken } = useAuth();
+  const { getToken, sessionId, userId } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
+    // Update Clerk information
+    setDebugInfo(prev => ({
+      ...prev,
+      clerk: {
+        userId,
+        sessionId,
+        token: null // We'll update this when making the API call
+      }
+    }));
+
     // Collect window information
     setDebugInfo(prev => ({
       ...prev,
@@ -61,9 +79,13 @@ export default function TestPage() {
           'Content-Type': 'application/json',
         };
 
-        // Update debug info with request details
+        // Update debug info with request details and token
         setDebugInfo(prev => ({
           ...prev,
+          clerk: {
+            ...prev.clerk!,
+            token: token || null
+          },
           request: {
             url: url,
             finalUrl: url,
@@ -100,7 +122,7 @@ export default function TestPage() {
     };
 
     fetchAccounts();
-  }, [getToken]);
+  }, [getToken, sessionId, userId, user]);
 
   return (
     <div className="p-8">
@@ -111,6 +133,22 @@ export default function TestPage() {
         <h2 className="text-xl font-semibold mb-4">Environment Variables</h2>
         <pre className="bg-gray-100 p-4 rounded overflow-auto">
           {JSON.stringify(debugInfo.env, null, 2)}
+        </pre>
+      </section>
+
+      {/* Clerk Information */}
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Clerk Information</h2>
+        <pre className="bg-gray-100 p-4 rounded overflow-auto">
+          {JSON.stringify({
+            ...debugInfo.clerk,
+            user: user ? {
+              id: user.id,
+              email: user.emailAddresses[0]?.emailAddress,
+              firstName: user.firstName,
+              lastName: user.lastName
+            } : null
+          }, null, 2)}
         </pre>
       </section>
 
