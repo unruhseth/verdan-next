@@ -10,38 +10,18 @@ const nextConfig = {
 
   // Configure rewrites for development and production
   async rewrites() {
-    const rewrites = [
-      // Handle malformed admin paths with domain
-      {
-        source: '/admin/:slug*/admin/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL + '/admin/:path*',
-      },
-      // Handle normal admin paths
+    return [
+      // Handle admin paths
       {
         source: '/admin/:path*',
         destination: process.env.NEXT_PUBLIC_API_URL + '/admin/:path*',
       },
-      // Handle malformed API paths with domain
-      {
-        source: '/api/:slug*/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*',
-      },
-      // Handle normal API paths
+      // Handle API paths
       {
         source: '/api/:path*',
         destination: process.env.NEXT_PUBLIC_API_URL + '/api/:path*',
       }
     ];
-
-    // Add development-specific rewrites
-    if (process.env.NODE_ENV === 'development') {
-      rewrites.push({
-        source: '/api/:path*',
-        destination: 'http://localhost:3000/api/:path*',
-      });
-    }
-
-    return rewrites;
   },
 
   // Configure headers for security
