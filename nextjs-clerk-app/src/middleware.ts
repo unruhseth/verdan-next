@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 // Only check if user is logged in - let the API handle authorization
 export default authMiddleware({
   // Public routes that don't require login
-  publicRoutes: ["/sign-in", "/sign-up", "/unauthorized"],
+  publicRoutes: ["/sign-in", "/sign-up", "/unauthorized", "/terms", "/privacy"],
   
   // For all other routes, check auth and roles
   afterAuth(auth, req) {
