@@ -9,9 +9,9 @@ export default function PrivacyPolicy() {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">1. Introduction</h2>
             <p className="text-gray-600 leading-relaxed">
-              verdan.io LLC (&quot;Company,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is committed to protecting your privacy.
+              Verdan.io LLC (&quot;Company,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is committed to protecting your privacy.
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information
-              when you use our website at verdan.io and our pond and water management automation services
+              when you use our website at Verdan.io and our pond and water management automation services
               (collectively, the &quot;Services&quot;).
             </p>
           </section>
@@ -79,7 +79,7 @@ export default function PrivacyPolicy() {
               <li><strong>Service Providers:</strong> With trusted third-party vendors (e.g., Twilio for SMS,
                 cloud hosting providers) who assist in operating our Services, subject to confidentiality obligations.</li>
               <li><strong>Legal Requirements:</strong> When required by law, regulation, or legal process.</li>
-              <li><strong>Safety:</strong> To protect the rights, property, or safety of verdan.io LLC,
+              <li><strong>Safety:</strong> To protect the rights, property, or safety of Verdan.io LLC,
                 our users, or the public.</li>
             </ul>
           </section>

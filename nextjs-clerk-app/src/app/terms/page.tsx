@@ -9,8 +9,8 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">1. Acceptance of Terms</h2>
             <p className="text-gray-600 leading-relaxed">
-              By accessing or using the services provided by verdan.io LLC (&quot;Company,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;),
-              including our website at verdan.io and any related applications, devices, or services (collectively,
+              By accessing or using the services provided by Verdan.io LLC (&quot;Company,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;),
+              including our website at Verdan.io and any related applications, devices, or services (collectively,
               the &quot;Services&quot;), you agree to be bound by these Terms of Service. If you do not agree to these
               terms, please do not use our Services.
             </p>
@@ -19,7 +19,7 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">2. Description of Services</h2>
             <p className="text-gray-600 leading-relaxed">
-              verdan.io LLC provides pond and water management automation services, including remote monitoring
+              Verdan.io LLC provides pond and water management automation services, including remote monitoring
               of water levels, automated valve control, sensor data collection, and related alert notifications.
               Our Services may include hardware controllers, cloud-based dashboards, and communication features
               such as SMS text message alerts.
@@ -30,7 +30,7 @@ export default function TermsOfService() {
             <h2 className="text-xl font-semibold text-gray-800 mb-3">3. SMS/Text Messaging Terms</h2>
             <p className="text-gray-600 leading-relaxed mb-3">
               By providing your phone number and opting in to SMS notifications, you consent to receive
-              automated text messages from verdan.io LLC related to your account and connected devices.
+              automated text messages from Verdan.io LLC related to your account and connected devices.
               These messages may include:
             </p>
             <ul className="list-disc list-inside text-gray-600 mb-3 space-y-1">
@@ -85,7 +85,7 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">6. Limitation of Liability</h2>
             <p className="text-gray-600 leading-relaxed">
-              To the fullest extent permitted by law, verdan.io LLC shall not be liable for any indirect,
+              To the fullest extent permitted by law, Verdan.io LLC shall not be liable for any indirect,
               incidental, special, consequential, or punitive damages arising out of or relating to your
               use of the Services. Our Services involve automated monitoring and control of physical water
               systems. While we strive for reliability, we do not guarantee uninterrupted service and are
